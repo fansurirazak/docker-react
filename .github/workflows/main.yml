@@ -6,18 +6,15 @@ on:
 
 jobs:
   test:
-    name: Build and push to Docker
+    name: Run test suite
     runs-on: ubuntu-latest
     env:
-      TEST_TAG: user/app:test
-      LATEST_TAG: user/app:latest
+      TEST_TAG: afansuri/docker-react:test
+      LATEST_TAG: afansuri/docker-react:latest
     steps:
       - 
         name: Checkout
         uses: actions/checkout@v4
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -28,18 +25,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Build and export to Docker
+        name: Build base image 
         uses: docker/build-push-action@v5
         with:
           context: .
-          load: true
+          file: ./Dockerfile.dev
+          push: false
           tags: ${{ env.TEST_TAG }}
       -
-        name: Build and push
-        uses: docker/build-push-action@v5
+        name: Run test suite
+        uses: addnab/docker-run-action@v3
         with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ env.LATEST_TAG }}
-          
+          image: ${{ env.TEST_TAG }}
+          run: docker run -e CI=true ${{ env.TEST_TAG }} npm run test
