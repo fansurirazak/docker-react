@@ -30,11 +30,9 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.dev
-          push: false
+          load: True
           tags: ${{ env.TEST_TAG }}
       -
         name: Run test suite
-        uses: addnab/docker-run-action@v3
-        with:
-          image: ${{ env.TEST_TAG }}
-          run: docker run -e CI=true ${{ env.TEST_TAG }} npm run test
+        run: |
+          docker run -e CI=true ${{ env.TEST_TAG }} npm run test
